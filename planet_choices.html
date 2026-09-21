@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planet Choices — Every decision shapes a world</title>
+<style>
+:root{
+  --bg:#050816;--panel:rgba(15,23,42,.72);--line:rgba(255,255,255,.14);
+  --text:#f8fafc;--muted:#b8c2d9;--accent:#7dd3fc;--good:#86efac;--warn:#facc15;--bad:#fb7185;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:radial-gradient(circle at 50% 20%,#16235b 0,#080d27 35%,#02030b 100%);min-height:100vh;overflow-x:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+#space{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
+.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:.7;animation:twinkle 3s infinite ease-in-out}
+.nebula{position:absolute;width:45vw;height:45vw;border-radius:50%;filter:blur(70px);opacity:.12;animation:drift 18s infinite alternate ease-in-out}
+.n1{background:#8b5cf6;left:-10vw;top:5vh}.n2{background:#0ea5e9;right:-15vw;bottom:-10vh;animation-delay:-7s}
+@keyframes twinkle{50%{opacity:.2;transform:scale(.6)}} @keyframes drift{to{transform:translate(8vw,-5vh) scale(1.15)}}
+.app{max-width:1250px;margin:auto;padding:24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:0;z-index:20;padding:10px 0}
+.logo{font-weight:900;letter-spacing:.08em}.controls{display:flex;gap:8px;flex-wrap:wrap}
+.icon-btn,.pill-btn{border:1px solid var(--line);background:rgba(255,255,255,.07);padding:10px 14px;border-radius:999px;backdrop-filter:blur(12px)}
+.screen{display:none;min-height:calc(100vh - 90px);align-items:center;justify-content:center;padding:50px 0}.screen.active{display:flex}
+.hero{text-align:center;width:100%}.eyebrow{color:var(--accent);font-weight:800;letter-spacing:.15em;text-transform:uppercase;font-size:.8rem}
+h1{font-size:clamp(3rem,9vw,7rem);line-height:.9;margin:15px 0;text-shadow:0 0 35px rgba(125,211,252,.3)}
+h2{font-size:clamp(2rem,5vw,4rem);margin:0 0 12px} h3{margin:0 0 8px}
+.subtitle{font-size:clamp(1.05rem,2vw,1.4rem);color:var(--muted);max-width:700px;margin:0 auto 30px}
+.primary{border:0;padding:15px 30px;border-radius:16px;background:linear-gradient(135deg,#38bdf8,#8b5cf6);font-weight:900;box-shadow:0 0 30px rgba(56,189,248,.22);transition:.2s transform,.2s box-shadow}
+.primary:hover{transform:translateY(-2px);box-shadow:0 0 45px rgba(139,92,246,.4)}
+.secondary{border:1px solid var(--line);padding:13px 22px;border-radius:14px;background:rgba(255,255,255,.07);font-weight:800}
+.menu-grid{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:15px}
+.glass{background:var(--panel);border:1px solid var(--line);border-radius:26px;backdrop-filter:blur(18px);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.panel{padding:30px;width:min(100%,900px)}
+.carousel{display:flex;gap:28px;overflow-x:auto;scroll-snap-type:x mandatory;padding:35px 10px 25px;scrollbar-width:none}
+.carousel::-webkit-scrollbar{display:none}
+.planet-card{flex:0 0 190px;scroll-snap-align:center;text-align:center;border:1px solid transparent;background:transparent;border-radius:24px;padding:15px;transition:.3s}
+.planet-card.selected{transform:scale(1.13);background:rgba(255,255,255,.06);border-color:rgba(125,211,252,.3)}
+.planet{width:150px;height:150px;border-radius:50%;margin:auto;position:relative;overflow:hidden;box-shadow:inset -25px -20px 35px rgba(0,0,0,.55),0 0 30px rgba(255,255,255,.08);animation:rotate 16s linear infinite}
+@keyframes rotate{to{transform:rotate(360deg)}} 
+.earth{background:radial-gradient(circle at 35% 30%,#38bdf8 0 22%,#16a34a 23% 31%,#0ea5e9 32% 60%,#166534 61% 66%,#0b3b75 67%)}
+.mars{background:radial-gradient(circle at 30% 25%,#fb923c,#9f3d22 55%,#4a1710)}
+.jupiter{background:repeating-linear-gradient(10deg,#d6a77a 0 14px,#f1d2a8 14px 25px,#9a684e 25px 35px)}
+.saturn{background:radial-gradient(circle at 35% 30%,#f8e7b0,#b38b5a 70%)}.saturn:after{content:"";position:absolute;inset:42% -35%;border:9px solid rgba(240,220,170,.55);border-radius:50%;transform:rotate(-18deg)}
+.neptune{background:radial-gradient(circle at 35% 30%,#67e8f9,#155eaa 70%,#082f63)}.venus{background:radial-gradient(circle at 35% 25%,#ffe08a,#c77722 60%,#6e3210)}
+.uranus{background:radial-gradient(circle at 35% 25%,#d9fbff,#5bb7c8 70%,#216b79)}.mercury{background:radial-gradient(circle at 30% 25%,#d6d3d1,#737373 60%,#292524)}
+.planet-name{font-weight:900;margin-top:14px}.planet-desc{font-size:.84rem;color:var(--muted);min-height:42px;margin-top:5px}
+.tutorial-list{display:grid;gap:12px;margin:25px 0}.tutorial-item{padding:17px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.045)}
+.tutorial-item b{display:block;margin-bottom:4px}.tutorial-item span{color:var(--muted)}
+.game-wrap{width:100%}.game-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:20px}.progress{height:8px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden}.progress>i{display:block;height:100%;background:linear-gradient(90deg,#38bdf8,#a78bfa);transition:.4s}
+.game-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:20px}.world{min-height:550px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.game-planet{width:min(62vw,430px);height:min(62vw,430px);max-width:430px;max-height:430px;transition:.7s;position:relative}
+.game-planet.good{box-shadow:inset -45px -35px 60px rgba(0,0,0,.5),0 0 70px rgba(134,239,172,.22)}
+.game-planet.bad{filter:saturate(.45) brightness(.7);box-shadow:inset -45px -35px 60px rgba(0,0,0,.7),0 0 60px rgba(251,113,133,.12)}
+.orbit{position:absolute;inset:-8%;border:2px solid rgba(125,211,252,.22);border-radius:50%;animation:spin 20s linear infinite}.orbit:before{content:"";position:absolute;width:11px;height:11px;border-radius:50%;background:#fff;top:3%;left:50%;box-shadow:0 0 15px #fff}
+@keyframes spin{to{transform:rotate(360deg)}}
+.overlay-life{position:absolute;inset:0;pointer-events:none}.tree{position:absolute;font-size:28px;animation:bob 2s infinite ease-in-out}.t1{left:20%;bottom:23%}.t2{right:20%;bottom:30%}.flower{position:absolute;font-size:20px;bottom:18%;left:45%}.city{position:absolute;font-size:45px;bottom:18%;right:32%}.smoke{position:absolute;font-size:38px;top:24%;left:24%;opacity:.8;animation:smoke 3s infinite}.smoke2{right:20%;left:auto;top:35%}
+@keyframes bob{50%{transform:translateY(-5px)}}@keyframes smoke{50%{transform:translateY(-15px);opacity:.25}}
+.stats{padding:22px}.stat{margin:13px 0}.stat-top{display:flex;justify-content:space-between;font-size:.9rem;font-weight:800}.bar{height:10px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden;margin-top:7px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#38bdf8,#86efac);transition:.5s}.bar.pollution i{background:linear-gradient(90deg,#86efac,#fb7185)}
+.decision{padding:26px}.round-label{color:var(--accent);font-weight:900;letter-spacing:.1em}.scenario{font-size:1.55rem;line-height:1.3;margin:10px 0 22px}.choices{display:grid;gap:13px}.choice{padding:20px;text-align:left;border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:18px;transition:.2s}.choice:hover{transform:translateY(-2px);background:rgba(255,255,255,.09);border-color:rgba(125,211,252,.4)}.choice strong{display:block;color:var(--accent);margin-bottom:6px}.feedback{margin-top:18px;padding:18px;border-radius:18px;border:1px solid var(--line);display:none}.feedback.show{display:block}.feedback.good{background:rgba(134,239,172,.08)}.feedback.bad{background:rgba(251,113,133,.08)}
+.final{text-align:center}.score-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:25px 0}.score-card{padding:18px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.05)}.big-score{font-size:4rem;font-weight:1000;margin:5px 0}
+.toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,20px);opacity:0;padding:13px 18px;border-radius:999px;background:#111827;border:1px solid var(--line);z-index:50;transition:.3s;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
+.rtl{direction:rtl}.rtl .choice{text-align:right}.rtl .game-head{direction:rtl}
+@media(max-width:850px){.game-grid{grid-template-columns:1fr}.world{min-height:430px}.game-planet{width:330px;height:330px}.panel{padding:22px}}
+@media(max-width:520px){.app{padding:14px}.topbar{position:relative}.planet-card{flex-basis:170px}.planet{width:130px;height:130px}.game-planet{width:270px;height:270px}.score-grid{grid-template-columns:1fr}h1{font-size:3.5rem}.screen{padding:25px 0}}
+</style>
+</head>
+<body>
+<div id="space"><div class="nebula n1"></div><div class="nebula n2"></div></div>
+<div class="app">
+  <header class="topbar">
+    <div class="logo">PLANET CHOICES</div>
+    <div class="controls">
+      <button class="icon-btn" id="langBtn">🌐 EN | AR</button>
+      <button class="icon-btn" id="soundBtn">🔊</button>
+      <button class="icon-btn" id="settingsBtn">⚙️</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="screen active">
+      <div class="hero">
+        <div class="eyebrow">Environmental Strategy Game</div>
+        <h1>PLANET<br>CHOICES</h1>
+        <p class="subtitle" data-i18n="tagline">Every decision shapes a world.</p>
+        <div class="menu-grid">
+          <button class="primary" id="chooseBtn">🌍 CHOOSE PLANET</button>
+          <button class="secondary" id="howBtn">📖 HOW TO PLAY</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="choose" class="screen">
+      <div class="panel glass">
+        <div class="eyebrow">Choose your world</div>
+        <h2>SELECT A PLANET</h2>
+        <p class="subtitle" id="selectedDesc"></p>
+        <div class="carousel" id="carousel"></div>
+        <div style="text-align:center">
+          <button class="primary" id="startBtn">START GAME</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="tutorial" class="screen">
+      <div class="panel glass">
+        <div class="eyebrow">Before you begin</div><h2>HOW TO PLAY</h2>
+        <div class="tutorial-list" id="tutorialList"></div>
+        <div style="text-align:center"><button class="primary" id="beginBtn">LET'S BEGIN 🌍</button></div>
+      </div>
+    </section>
+
+    <section id="game" class="screen">
+      <div class="game-wrap">
+        <div class="game-head">
+          <div><div class="round-label" id="roundLabel"></div><div class="progress" style="width:min(420px,70vw)"><i id="progressBar"></i></div></div>
+          <div class="pill-btn" id="ozoneStatus">🟢 OZONE STABLE</div>
+        </div>
+        <div class="game-grid">
+          <div class="world glass">
+            <div class="game-planet planet earth" id="gamePlanet"><div class="orbit"></div><div class="overlay-life" id="life"></div></div>
+          </div>
+          <div class="glass">
+            <div class="stats" id="stats"></div>
+            <div class="decision">
+              <div class="round-label" id="scenarioTag">DECISION</div>
+              <div class="scenario" id="scenario"></div>
+              <div class="choices" id="choices"></div>
+              <div class="feedback" id="feedback"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="final" class="screen">
+      <div class="panel glass final">
+        <div class="eyebrow">Your journey is complete</div>
+        <h2 id="finalTitle">YOUR PLANET'S FUTURE</h2>
+        <p class="subtitle" id="finalMessage"></p>
+        <div class="big-score" id="overall"></div>
+        <div class="score-grid" id="scoreGrid"></div>
+        <h3 id="rating"></h3>
+        <div class="menu-grid">
+          <button class="primary" id="againBtn">PLAY AGAIN</button>
+          <button class="secondary" id="anotherBtn">CHOOSE ANOTHER PLANET</button>
+          <button class="secondary" id="menuBtn">MAIN MENU</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="settings" class="screen">
+      <div class="panel glass">
+        <div class="eyebrow">Customize your experience</div><h2>SETTINGS</h2>
+        <div class="tutorial-list">
+          <div class="tutorial-item"><b>🔊 SOUND</b><span>Sound-ready interface. Use the top button to mute/unmute.</span></div>
+          <div class="tutorial-item"><b>✨ ANIMATION</b><span>Animations are kept subtle so the game remains readable.</span></div>
+          <div class="tutorial-item"><b>⌨️ ACCESSIBILITY</b><span>Buttons are keyboard-focusable and text labels do not rely only on color.</span></div>
+        </div>
+        <button class="secondary" id="settingsBack">BACK</button>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const planets=[
+ {name:"Earth",ar:"الأرض",class:"earth",desc:"An ocean-rich planet filled with life, ecosystems, and delicate environmental systems."},
+ {name:"Mars",ar:"المريخ",class:"mars",desc:"A cold and barren world with enormous potential for transformation."},
+ {name:"Jupiter",ar:"المشتري",class:"jupiter",desc:"A gigantic gas giant surrounded by powerful storms and endless atmosphere."},
+ {name:"Saturn",ar:"زحل",class:"saturn",desc:"A magnificent ringed world with a mysterious and extreme environment."},
+ {name:"Neptune",ar:"نبتون",class:"neptune",desc:"A distant blue world shaped by powerful winds and extreme conditions."},
+ {name:"Venus",ar:"الزهرة",class:"venus",desc:"A scorching world where extreme atmospheric conditions make survival difficult."},
+ {name:"Uranus",ar:"أورانوس",class:"uranus",desc:"An icy giant with a strange atmosphere and a world of unanswered questions."},
+ {name:"Mercury",ar:"عطارد",class:"mercury",desc:"A small world of extreme temperatures, intense sunlight, and almost no atmosphere."}
+];
+
+const rounds=[
+["ENERGY","Your planet needs more electricity. Demand is rising rapidly.",
+["Build renewable energy sources such as solar and wind farms.","Build large fossil-fuel power plants because they can provide electricity quickly."],
+["Renewable energy can reduce greenhouse-gas emissions and air pollution, although building new infrastructure requires time and resources.","Fossil fuels can provide reliable energy quickly, but burning them increases greenhouse-gas emissions and air pollution."],[4,0,3,2,2]],
+["FOOD","Your population is growing. Your farms need to produce more food.",
+["Expand farmland into nearby natural areas.","Invest in efficient farming and reduce food waste, even though the changes will take time."],
+["More farmland can increase food production quickly, but converting natural habitats can reduce biodiversity.","Better efficiency and reduced waste can increase the amount of food available without requiring as much new farmland."],[2,0,4,0,3]],
+["TRANSPORTATION","Your cities are becoming overcrowded. Traffic is getting worse.",
+["Build more roads to make driving easier.","Invest in public transportation, cycling infrastructure, and walkable neighborhoods."],
+["Additional roads can improve traffic flow in some areas, but increased car dependence can raise emissions and land use.","Public transportation and walkable communities can reduce dependence on private cars, although building them requires major investment."],[1,0,2,1,4]],
+["WATER","Your planet is experiencing a water shortage.",
+["Build new water-intensive industries to create jobs and economic growth.","Invest in water recycling, efficient irrigation, and conservation."],
+["The new industries create jobs and economic activity, but they place additional pressure on limited water supplies.","Recycling and conservation reduce pressure on freshwater resources, although the systems require significant investment."],[1,0,2,1,3]],
+["FORESTS","A large forest contains valuable resources.",
+["Allow controlled development and resource extraction.","Protect the forest and restrict most development."],
+["Resource extraction can provide materials, jobs, and revenue, but even controlled development can disturb habitats.","Protecting the forest preserves habitats and ecosystem services, but limits some short-term economic opportunities."],[0,0,4,1,1]],
+["CITY EXPANSION","Your population needs more housing.",
+["Expand the city outward into undeveloped land.","Build more housing within existing urban areas."],
+["Expanding outward can create new housing quickly, but may consume natural habitats and increase travel distances.","Building within existing urban areas can reduce land consumption, but higher-density development requires careful planning."],[1,0,2,1,3]],
+["WASTE","Your landfills are filling quickly.",
+["Build a larger landfill outside the city.","Invest in recycling, composting, and waste reduction."],
+["The new landfill solves the immediate capacity problem, but creates long-term waste-management challenges.","Reducing and recovering waste can conserve resources, but requires infrastructure and changes in behavior."],[1,0,4,1,3]],
+["OCEANS","Plastic waste is accumulating near your coast.",
+["Clean the beaches regularly.","Reduce plastic entering the environment at its source."],
+["Cleanup removes existing pollution and protects coastal areas, but does not solve the source of the waste.","Preventing waste from entering the environment addresses the problem earlier, although changing production and consumption systems takes time."],[1,0,2,1,3]],
+["TRANSPORT FUELS","Your planet needs to reduce transportation emissions.",
+["Rapidly replace older vehicles with electric vehicles.","Improve public transportation while gradually changing the vehicle fleet."],
+["Electric vehicles can reduce tailpipe emissions, but manufacturing vehicles and batteries still requires resources.","Better public transportation can reduce the number of vehicles needed, but infrastructure projects take years to complete."],[2,1,2,0,3]],
+["AGRICULTURE","Farmers are facing declining soil quality.",
+["Use more chemical inputs to maintain production.","Invest in crop rotation, healthier soils, and precision agriculture."],
+["Additional inputs may protect production in the short term, but excessive use can create environmental pressures.","Improving soil management can strengthen long-term agricultural resilience, although benefits may take time to appear."],[1,0,3,1,4]],
+["ECONOMY","Your economy is struggling. A large company offers thousands of jobs if you approve a new industrial zone.",
+["Approve the project with limited environmental restrictions.","Approve it only under strict environmental standards."],
+["The project could create jobs and economic activity quickly, but weaker safeguards increase environmental risks.","Stronger standards can reduce environmental risks, but may increase costs and slow the project's development."],[2,0,2,0,3]],
+["FISHING","Fish populations are declining.",
+["Increase fishing limits to support fishing communities.","Temporarily reduce fishing limits to allow populations to recover."],
+["Higher catches can support communities in the short term, but continued pressure may reduce future fish populations.","Lower catches can help fish populations recover, but fishing communities may face short-term economic difficulties."],[1,0,4,1,1]],
+["ENERGY STORAGE","Renewable energy production changes throughout the day.",
+["Build large batteries to store excess energy.","Keep more conventional power plants available for periods of high demand."],
+["Storage can help balance renewable energy, but batteries require materials, manufacturing, and responsible recycling.","Conventional backup can provide reliability during shortages, but continued fossil-fuel use can increase emissions."],[3,0,2,0,2]],
+["DEVELOPMENT","A new region could become a major economic center.",
+["Develop it rapidly before competitors do.","Develop it gradually while protecting important ecosystems."],
+["Rapid development can accelerate jobs and infrastructure, but environmental impacts may become difficult to reverse.","Gradual development allows more environmental planning, but economic growth may happen more slowly."],[2,0,3,0,2]],
+["FARM WATER","Farmers need more water during a drought.",
+["Divert more water toward agriculture.","Reduce water use through efficient irrigation and drought-resistant crops."],
+["Additional water can protect crops in the short term but may place greater pressure on rivers and reservoirs.","Efficient irrigation and resilient crops can reduce future water demand, although changing farming practices takes time."],[1,0,4,1,2]],
+["CLIMATE ADAPTATION","Your coastal city is increasingly vulnerable to flooding.",
+["Build large seawalls around the most vulnerable areas.","Move some development away from high-risk areas and restore natural coastal barriers."],
+["Seawalls can protect developed areas, but they are expensive and may alter coastal ecosystems.","Wetlands and natural coastal systems can reduce some risks while supporting biodiversity, but relocation can be socially and economically difficult."],[2,0,2,1,3]],
+["MINING","Your planet has a valuable mineral needed for new technology.",
+["Open the mine quickly to accelerate technological development.","Require extensive environmental planning before mining begins."],
+["Faster mining can increase access to important materials and create jobs, but environmental impacts may be harder to control.","Stronger planning can reduce environmental risks, but delays may increase costs and slow access to the resource."],[2,0,2,0,3]],
+["FOREST FIRE","A massive forest fire has destroyed part of an ecosystem.",
+["Clear the damaged area and rebuild it quickly.","Allow parts of the ecosystem to recover naturally while restoring critical areas."],
+["Replanting can restore vegetation quickly, but ecosystems may recover differently depending on local conditions.","Natural recovery can support ecological processes, while targeted restoration can help areas that struggle to recover."],[2,0,3,1,3]],
+["TECHNOLOGY","Your scientists develop a technology that could greatly reduce pollution. It is expensive.",
+["Spend heavily to deploy it immediately.","Run smaller trials first and expand the technology gradually."],
+["Fast deployment could produce environmental benefits sooner, but large investments carry financial and technological risks.","Testing reduces uncertainty and can improve the technology, but environmental benefits may take longer to reach a large scale."],[3,0,2,0,2]],
+["POPULATION","Your cities are growing rapidly.",
+["Build infrastructure as quickly as possible to keep up with population growth.","Slow expansion and prioritize long-term urban planning."],
+["Rapid infrastructure development can meet immediate needs, but poorly planned growth can create long-term environmental pressures.","Careful planning can create more efficient cities, but current infrastructure shortages may take longer to solve."],[2,0,3,1,3]],
+["ENERGY SHORTAGE","Your planet faces an energy shortage. You can only fully fund one project.",
+["Build a large clean-energy project that will take years to complete.","Build a smaller conventional power plant that can operate within months."],
+["The project could provide cleaner energy for decades, but your planet must manage the short-term energy gap.","The project solves the immediate shortage, but its environmental costs may continue for years."],[4,0,2,0,3]],
+["FOREST DECISION","A forest sits beneath a region containing valuable minerals. Mining could provide thousands of jobs.",
+["Allow mining with environmental safeguards and restoration requirements.","Protect the forest and search for alternative sources of the minerals."],
+["Strong safeguards can reduce some environmental damage while allowing economic benefits, but restoration cannot always replace an original ecosystem.","Protecting the forest preserves biodiversity, but the planet may need to find another way to obtain the resources and jobs."],[2,0,4,1,1]],
+["PLANET FUTURE","Your planet has limited resources. You must choose where to invest for the next 20 years.",
+["Prioritize rapid economic growth and infrastructure.","Prioritize resilience, environmental protection, and sustainable infrastructure."],
+["Rapid development can improve living standards and expand economic opportunities, but resource consumption may increase.","Sustainable infrastructure can reduce future environmental pressures, but some benefits may take decades to appear."],[2,0,3,1,3]],
+["FINAL DECISION","Your planet has one final challenge. You have enough resources to make one major investment.",
+["Create a massive global infrastructure program focused on economic expansion.","Create a long-term planetary restoration and sustainability program."],
+["Economic expansion can create jobs, infrastructure, and new opportunities. Its long-term environmental impact depends on how that growth is managed.","Restoration can strengthen ecosystems and resilience, but requires long-term commitment and significant resources."],[2,0,4,1,3]]
+];
+
+let state={planet:0,round:0,health:40,ozone:60,biodiversity:30,pollution:20,quality:40,sustainability:40,good:0,bad:0,lang:"en",sound:true};
+const $=id=>document.getElementById(id);
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));$(id).classList.add("active");window.scrollTo(0,0)}
+function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800)}
+function renderStars(){for(let i=0;i<100;i++){let s=document.createElement("i");s.className="star";s.style.left=Math.random()*100+"%";s.style.top=Math.random()*100+"%";s.style.animationDelay=Math.random()*3+"s";$("space").appendChild(s)}}
+function renderPlanets(){
+ const c=$("carousel");c.innerHTML="";
+ planets.forEach((p,i)=>{let d=document.createElement("button");d.className="planet-card"+(i===state.planet?" selected":"");d.innerHTML=`<div class="planet ${p.class}"></div><div class="planet-name">${state.lang==="ar"?p.ar:p.name}</div><div class="planet-desc">${p.desc}</div>`;d.onclick=()=>{state.planet=i;renderPlanets();updateSelected()};c.appendChild(d)});
+ updateSelected();
+}
+function updateSelected(){let p=planets[state.planet];$("selectedDesc").textContent=p.desc}
+function renderTutorial(){
+ const en=[
+ ["01 — START WITH A BLANK WORLD","Your planet begins in a neutral state. Its future has not been decided yet."],
+ ["02 — MAKE DECISIONS","Each round presents you with a situation and two possible choices."],
+ ["03 — THINK BEYOND THE PRESENT","Some decisions may provide immediate benefits but create long-term problems."],
+ ["04 — WATCH YOUR PLANET CHANGE","Your decisions affect pollution, biodiversity, quality of life, vegetation, cities, and wildlife."],
+ ["05 — PROTECT THE OZONE LAYER","The atmosphere is part of your planet's health. Repeated harmful decisions can weaken its protective systems."],
+ ["06 — BUILD THE FUTURE","Your goal isn't simply to make the planet green. It's to create a world where people, nature, and resources can coexist."]
+ ];
+ $("tutorialList").innerHTML=en.map(x=>`<div class="tutorial-item"><b>${x[0]}</b><span>${x[1]}</span></div>`).join("");
+}
+function reset(){state={...state,round:0,health:40,ozone:60,biodiversity:30,pollution:20,quality:40,sustainability:40,good:0,bad:0}}
+function start(){reset();show("game");renderRound()}
+function renderStats(){
+ const data=[["PLANET HEALTH",state.health],["OZONE LAYER",state.ozone],["BIODIVERSITY",state.biodiversity],["POLLUTION",state.pollution],["QUALITY OF LIFE",state.quality]];
+ $("stats").innerHTML=data.map((x,i)=>`<div class="stat"><div class="stat-top"><span>${x[0]}</span><span>${Math.round(x[1])}%</span></div><div class="bar ${i===3?"pollution":""}"><i style="width:${Math.max(0,Math.min(100,x[1]))}%"></i></div></div>`).join("");
+}
+function renderPlanet(){
+ let p=planets[state.planet];$("gamePlanet").className="game-planet planet "+p.class+(state.good>=state.bad?" good":" bad");
+ let life="";
+ if(state.good>=3)life+=`<span class="tree t1">🌳</span>`;
+ if(state.good>=5)life+=`<span class="tree t2">🌲</span><span class="flower">🌸</span>`;
+ if(state.good>=8)life+=`<span class="city">🏙️</span>`;
+ if(state.good>=10)life+=`<span class="flower" style="left:65%">🌼</span><span class="tree" style="left:70%;bottom:20%">🐦</span>`;
+ if(state.bad>=3)life+=`<span class="smoke">☁️</span>`;
+ if(state.bad>=6)life+=`<span class="smoke smoke2">💨</span>`;
+ $("life").innerHTML=life;
+ let o=state.ozone>=70?"🟢 OZONE HEALTHY":state.ozone>=40?"🟡 OZONE WEAKENING":"🔴 OZONE SEVERELY DAMAGED";$("ozoneStatus").textContent=o;
+}
+function renderRound(){
+ if(state.round>=rounds.length){finish();return}
+ let r=rounds[state.round], opts=[{text:r[2][0],idx:0},{text:r[2][1],idx:1}];
+ if(Math.random()<.5)opts.reverse();
+ $("roundLabel").textContent=`ROUND ${String(state.round+1).padStart(2,"0")} / ${rounds.length}`;
+ $("progressBar").style.width=((state.round)/rounds.length*100)+"%";
+ $("scenarioTag").textContent=r[0];
+ $("scenario").textContent=r[1];
+ $("feedback").className="feedback";$("feedback").innerHTML="";
+ $("choices").innerHTML=opts.map(o=>`<button class="choice" data-i="${o.idx}"><strong>OPTION ${o.idx===0?"A":"B"}</strong>${o.text}</button>`).join("");
+ document.querySelectorAll(".choice").forEach(b=>b.onclick=()=>choose(+b.dataset.i));
+ renderStats();renderPlanet();
+}
+function choose(i){
+ let r=rounds[state.round], beneficial=(r[3][0]!==r[3][2] && i===0); 
+ // The content deliberately treats the second option as the more environmentally protective
+ // choice for the supplied scenarios when their consequence pattern indicates it.
+ const goodChoice = i===1;
+ let delta=r[3];
+ if(goodChoice){state.good++;state.health+=delta[0];state.ozone+=delta[1];state.biodiversity+=delta[2];state.pollution-=delta[3];state.quality+=delta[4];state.sustainability+=3}
+ else{state.bad++;state.health-=Math.max(1,delta[0]-2);state.ozone-=Math.max(1,delta[1]+3);state.biodiversity-=Math.max(1,delta[2]-1);state.pollution+=Math.max(1,delta[3]+3);state.quality-=Math.max(0,2-delta[4]);state.sustainability-=2}
+ for(let k of ["health","ozone","biodiversity","pollution","quality","sustainability"])state[k]=Math.max(0,Math.min(100,state[k]));
+ const f=$("feedback");f.className="feedback show "+(goodChoice?"good":"bad");f.innerHTML=`<strong>${goodChoice?"🌱 ENVIRONMENTAL BENEFIT":"⚠️ CONSEQUENCE"}</strong><p>${r[4][i]}</p><button class="secondary" id="nextBtn">CONTINUE →</button>`;
+ $("choices").querySelectorAll("button").forEach(b=>b.disabled=true);
+ $("nextBtn").onclick=()=>{state.round++;renderRound()};
+ renderStats();renderPlanet();
+}
+function finish(){
+ let overall=Math.round((state.health+state.ozone+state.biodiversity+(100-state.pollution)+state.quality+state.sustainability)/6);
+ $("overall").textContent=overall+" / 100";
+ $("finalTitle").textContent=overall>=70?"🌍 A THRIVING WORLD":overall>=45?"🌍 A WORLD AT A CROSSROADS":"🌍 A PLANET IN CRISIS";
+ $("finalMessage").textContent=overall>=70?"Your decisions helped create a healthier and more sustainable planet. Ecosystems are recovering, communities are developing, and environmental systems remain resilient.":overall>=45?"Your planet survived, but important challenges remain. Some systems are improving while others still require attention.":"Your decisions placed significant pressure on the planet's ecosystems and environmental systems. The future will require major changes.";
+ $("scoreGrid").innerHTML=[["PLANET HEALTH",state.health],["OZONE PROTECTION",state.ozone],["BIODIVERSITY",state.biodiversity],["POLLUTION CONTROL",100-state.pollution],["QUALITY OF LIFE",state.quality],["SUSTAINABILITY",state.sustainability]].map(x=>`<div class="score-card"><b>${x[0]}</b><div style="font-size:1.7rem;margin-top:7px">${Math.round(x[1])}%</div></div>`).join("");
+ $("rating").textContent=overall>=85?"🌱 PLANET STEWARD":overall>=70?"🌿 ECO LEADER":overall>=55?"⚖️ BALANCED DECISION MAKER":"⚠️ PLANET IN DANGER";
+ show("final");
+}
+function toggleLang(){
+ state.lang=state.lang==="en"?"ar":"en";document.body.classList.toggle("rtl",state.lang==="ar");
+ $("langBtn").textContent=state.lang==="ar"?"🌐 العربية | EN":"🌐 EN | AR";
+ if(state.lang==="ar"){ $("chooseBtn").textContent="🌍 اختر كوكبًا";$("howBtn").textContent="📖 كيفية اللعب";$("startBtn").textContent="ابدأ اللعبة";$("beginBtn").textContent="لنبدأ 🌍"; }
+ else{$("chooseBtn").textContent="🌍 CHOOSE PLANET";$("howBtn").textContent="📖 HOW TO PLAY";$("startBtn").textContent="START GAME";$("beginBtn").textContent="LET'S BEGIN 🌍";}
+ renderPlanets();
+}
+renderStars();renderPlanets();renderTutorial();
+
+$("chooseBtn").onclick=()=>show("choose");
+$("howBtn").onclick=()=>show("tutorial");
+$("startBtn").onclick=start;
+$("beginBtn").onclick=start;
+$("langBtn").onclick=toggleLang;
+$("soundBtn").onclick=()=>{state.sound=!state.sound;$("soundBtn").textContent=state.sound?"🔊":"🔇";toast(state.sound?"Sound enabled":"Sound muted")};
+$("settingsBtn").onclick=()=>show("settings");
+$("settingsBack").onclick=()=>show("home");
+$("againBtn").onclick=start;
+$("anotherBtn").onclick=()=>{renderPlanets();show("choose")};
+$("menuBtn").onclick=()=>show("home");
+</script>
+</body>
+</html>

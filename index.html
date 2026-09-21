@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planet Choices — Every decision shapes a world</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪐</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Karla:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="stars" aria-hidden="true"></div>
+
+<main id="app">
+
+  <!-- ================= MAIN MENU ================= -->
+  <section class="screen active" id="screen-menu" data-screen>
+    <div class="menu-wrap">
+      <div class="menu-glyph" aria-hidden="true">🪐</div>
+      <h1 class="title" data-i18n="menu.title">PLANET CHOICES</h1>
+      <p class="subtitle" data-i18n="menu.subtitle">Every decision shapes a world.</p>
+      <p class="menu-intro" data-i18n="menu.intro">Welcome, Planet Manager. Your choices will shape the environment, economy, wildlife, and future of your planet. There is no perfect decision — only consequences.</p>
+
+      <div class="menu-actions">
+        <button class="btn btn-primary" data-nav="planetSelect" data-i18n="menu.choosePlanet">🌍 Choose Planet</button>
+        <button class="btn btn-ghost" data-nav="howToPlay" data-i18n="menu.howToPlay">📖 How to Play</button>
+      </div>
+
+      <div class="menu-toolbar">
+        <button class="chip" id="lang-toggle" data-i18n="menu.lang">🌐 EN | AR</button>
+        <button class="chip" id="sound-toggle" data-i18n-sound-on="menu.soundOn" data-i18n-sound-off="menu.soundOff">🔊 Sound</button>
+        <button class="chip" data-nav="settings" data-i18n="menu.settings">⚙️ Settings</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PLANET SELECTION ================= -->
+  <section class="screen" id="screen-planetSelect" data-screen>
+    <div class="panel">
+      <button class="back-link" data-nav="menu" data-i18n="nav.back">← Back</button>
+      <h2 class="section-title" data-i18n="planets.title">Choose your planet</h2>
+      <div class="planet-grid" id="planet-grid"></div>
+      <button class="btn btn-primary btn-wide" id="start-game-btn" disabled data-i18n="planets.start">Start Game</button>
+    </div>
+  </section>
+
+  <!-- ================= HOW TO PLAY ================= -->
+  <section class="screen" id="screen-howToPlay" data-screen>
+    <div class="panel">
+      <button class="back-link" data-nav="menu" data-i18n="nav.back">← Back</button>
+      <h2 class="section-title" data-i18n="how.title">How to play</h2>
+      <ol class="steps" id="how-steps"></ol>
+      <button class="btn btn-primary btn-wide" data-nav="menu" data-i18n="how.cta">Let's begin 🌍</button>
+    </div>
+  </section>
+
+  <!-- ================= INTRO BEFORE GAME ================= -->
+  <section class="screen" id="screen-intro" data-screen>
+    <div class="panel intro-panel">
+      <p class="eyebrow" id="intro-planet-name"></p>
+      <h2 class="section-title" data-i18n="intro.title">Your planet. Your choices.</h2>
+      <p class="intro-copy" data-i18n="intro.p1">Your planet starts as a blank, fragile world.</p>
+      <p class="intro-copy" data-i18n="intro.p2">Every decision you make will shape its future. Some choices will help your planet thrive. Others may create problems that won't appear until much later.</p>
+      <p class="intro-copy intro-emph" data-i18n="intro.p3">There won't always be an obvious answer. Think carefully. The future is in your hands.</p>
+      <button class="btn btn-primary btn-wide" id="enter-world-btn" data-i18n="intro.cta">Enter the World</button>
+    </div>
+  </section>
+
+  <!-- ================= GAME SCREEN ================= -->
+  <section class="screen" id="screen-game" data-screen>
+    <div class="hud">
+      <div class="hud-top">
+        <span class="round-counter"><span id="round-current">1</span> / <span id="round-total">24</span></span>
+        <span class="ozone-status" id="ozone-status">🟢 <span data-i18n="hud.ozoneStable">Ozone stable</span></span>
+      </div>
+      <div class="stat-bars" id="stat-bars"></div>
+    </div>
+
+    <div class="decision-card">
+      <p class="category-tag" id="round-category"></p>
+      <h2 class="situation" id="round-situation"></h2>
+
+      <div class="choices" id="round-choices"></div>
+    </div>
+
+    <div class="consequence-overlay" id="consequence-overlay">
+      <div class="consequence-box">
+        <p class="consequence-title" id="consequence-title"></p>
+        <p class="consequence-text" id="consequence-text"></p>
+        <div class="fact-card" id="fact-card" hidden>
+          <p class="fact-label" data-i18n="hud.didYouKnow">Did you know?</p>
+          <p class="fact-text" id="fact-text"></p>
+        </div>
+        <button class="btn btn-primary btn-wide" id="continue-btn" data-i18n="hud.continue">Continue</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RESULTS ================= -->
+  <section class="screen" id="screen-results" data-screen>
+    <div class="panel results-panel">
+      <p class="eyebrow" id="results-planet-name"></p>
+      <h2 class="section-title" id="results-headline" data-i18n="results.headline">Your planet's future</h2>
+      <p class="results-ending" id="results-ending"></p>
+
+      <div class="score-ring-wrap">
+        <div class="score-ring" id="score-ring">
+          <span class="score-number" id="score-number">0</span>
+        </div>
+        <p class="score-title" id="score-title"></p>
+      </div>
+
+      <div class="report" id="report-bars"></div>
+
+      <div class="score-insight">
+        <div class="insight-block">
+          <p class="insight-label" data-i18n="results.strongest">Strongest area</p>
+          <p class="insight-value" id="insight-strongest"></p>
+        </div>
+        <div class="insight-block">
+          <p class="insight-label" data-i18n="results.attention">Needs attention</p>
+          <p class="insight-value" id="insight-weakest"></p>
+        </div>
+      </div>
+
+      <p class="replay-line" data-i18n="replay.message">Try again and make completely different decisions.</p>
+      <div class="menu-actions">
+        <button class="btn btn-primary" id="play-again-btn" data-i18n="replay.playAgain">🌍 Play Again</button>
+        <button class="btn btn-ghost" id="choose-other-btn" data-i18n="replay.chooseOther">🪐 Choose Another Planet</button>
+        <button class="btn btn-ghost" data-nav="menu" data-i18n="replay.mainMenu">🏠 Main Menu</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SETTINGS ================= -->
+  <section class="screen" id="screen-settings" data-screen>
+    <div class="panel">
+      <button class="back-link" data-nav="menu" data-i18n="nav.back">← Back</button>
+      <h2 class="section-title" data-i18n="menu.settings">Settings</h2>
+
+      <div class="setting-row">
+        <span data-i18n="settings.language">Language</span>
+        <div class="setting-control">
+          <button class="pill-btn" id="settings-lang-en">English</button>
+          <button class="pill-btn" id="settings-lang-ar">العربية</button>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <span data-i18n="settings.sound">Sound</span>
+        <div class="setting-control">
+          <button class="pill-btn" id="settings-sound-on">🔊 On</button>
+          <button class="pill-btn" id="settings-sound-off">🔇 Off</button>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <span data-i18n="settings.animation">Animation</span>
+        <div class="setting-control">
+          <button class="pill-btn" id="settings-anim-full">✨ Full</button>
+          <button class="pill-btn" id="settings-anim-reduced">🌙 Reduced</button>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <span data-i18n="settings.textSize">Text size</span>
+        <div class="setting-control">
+          <button class="pill-btn" id="text-a-minus">A−</button>
+          <button class="pill-btn" id="text-a">A</button>
+          <button class="pill-btn" id="text-a-plus">A+</button>
+        </div>
+      </div>
+
+      <div class="setting-row setting-row-block">
+        <span data-i18n="settings.accessibility">Accessibility</span>
+        <label class="check-row"><input type="checkbox" id="high-contrast"> <span data-i18n="settings.highContrast">High contrast</span></label>
+        <label class="check-row"><input type="checkbox" id="reduced-motion"> <span data-i18n="settings.reducedMotion">Reduced motion</span></label>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
